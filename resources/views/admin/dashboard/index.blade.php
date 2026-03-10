@@ -43,6 +43,8 @@
                 </div>
             </div>
         </div>
+
+
         <div class="col-sm-6 col-xl-3">
             <div class="card h-100">
                 <div class="card-body d-flex align-items-center gap-3">
@@ -110,6 +112,10 @@
                         </a>
                         <a href="{{ route('invoices') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-journal-text me-2"></i> View Invoices
+                        </a>
+
+                        <a href="{{ route('customers.index') }}" class="btn btn-outline-info">
+                            <i class="bi bi-people me-2"></i> Manage Customers
                         </a>
                     </div>
                 </div>
