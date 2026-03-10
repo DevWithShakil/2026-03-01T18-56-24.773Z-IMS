@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CustomerController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -19,3 +20,6 @@ Route::get('/products',[DashboardController::class,'product'])->middleware('toke
 Route::get('/stocks',[DashboardController::class,'stock'])->middleware('token.auth')->name('stocks');
 Route::get('/pos',[DashboardController::class,'pos'])->middleware('token.auth')->name('pos');
 Route::get('/invoices',[DashboardController::class,'invoice'])->middleware('token.auth')->name('invoices');
+
+// Customer CRUD Routes
+Route::resource('customers', CustomerController::class)->middleware('token.auth');
