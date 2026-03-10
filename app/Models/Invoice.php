@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Invoice extends Model
 {
     use HasFactory;
+
     protected $fillable = [
+        'customer_id',
         'invoice_no',
         'invoice_date',
         'subtotal',
@@ -27,6 +29,11 @@ class Invoice extends Model
         'grand_total' => 'decimal:2',
     ];
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function items(){
         return $this->hasMany(InvoiceItem::class);
     }
@@ -36,4 +43,3 @@ class Invoice extends Model
         return $this->hasMany(StockMovement::class);
     }
 }
-

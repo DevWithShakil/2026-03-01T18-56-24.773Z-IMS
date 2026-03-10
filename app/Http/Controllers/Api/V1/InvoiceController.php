@@ -11,14 +11,13 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use function Symfony\Component\Translation\t;
 
 class InvoiceController extends Controller
 {
     public function index()
     {
         try {
-            $invoices = Invoice::with(['items.product.category'])
+            $invoices = Invoice::with(['items.product.category', 'customer'])
                 ->orderByDesc('id')
                 ->get();
 
@@ -39,6 +38,7 @@ class InvoiceController extends Controller
     {
         try {
             $validated = $request->validate([
+                'customer_id' => ['required', 'integer', 'exists:customers,id'],
                 'invoice_no' => ['nullable', 'string', 'max:255', 'unique:invoices,invoice_no'],
                 'invoice_date' => ['required', 'date'],
                 'items' => ['required', 'array', 'min:1'],
@@ -56,7 +56,7 @@ class InvoiceController extends Controller
                 'grand_total' => ['required', 'numeric', 'min:0'],
                 'status' => ['nullable', 'string', 'in:draft,finalized,cancelled'],
             ]);
-            // Invoice creation logic goes here
+
             DB::beginTransaction();
 
             if (empty($validated['invoice_no'])){
@@ -64,6 +64,7 @@ class InvoiceController extends Controller
             }
 
             $invoice = Invoice::create([
+                'customer_id' => $validated['customer_id'],
                 'invoice_no' => $validated['invoice_no'],
                 'invoice_date' => $validated['invoice_date'],
                 'subtotal' => $validated['subtotal'],
@@ -73,7 +74,7 @@ class InvoiceController extends Controller
                 'grand_total' => $validated['grand_total'],
                 'status' => $validated['status'] ?? 'draft',
             ]);
-            // Create invoice items
+
             foreach ($validated['items'] as $itemData) {
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
@@ -87,7 +88,6 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            // Create stock movements for the invoice items id finalized
             if ($invoice->status === 'finalized'){
                 $this->createStockMovement($invoice);
             }
@@ -96,7 +96,7 @@ class InvoiceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Invoice created successfully',
-                'data' => $invoice->load(['items.product.category']),
+                'data' => $invoice->load(['items.product.category', 'customer']),
             ], 201);
         }catch (ValidationException $e){
             DB::rollBack();
@@ -118,7 +118,7 @@ class InvoiceController extends Controller
     public function show(int $id)
     {
         try {
-            $invoice = Invoice::with(['items.product.category'])->find($id);
+            $invoice = Invoice::with(['items.product.category', 'customer'])->find($id);
             if (!$invoice) {
                 return response()->json([
                     'success' => false,
@@ -159,6 +159,7 @@ class InvoiceController extends Controller
             }
 
             $validated = $request->validate([
+                'customer_id' => ['sometimes', 'required', 'integer', 'exists:customers,id'], // Update 5
                 'invoice_no' => ['sometimes', 'required', 'string', 'max:255', 'unique:invoices,invoice_no,' . $invoice->id],
                 'invoice_date' => ['sometimes', 'required', 'date'],
                 'items' => ['sometimes', 'required', 'array', 'min:1'],
@@ -182,10 +183,7 @@ class InvoiceController extends Controller
             $oldStatus = $invoice->status;
 
             if (isset($validated['items'])) {
-                //Delete old items
                 $invoice->items()->delete();
-
-                // Create new invoice items
                 foreach ($validated['items'] as $itemData) {
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
@@ -201,6 +199,7 @@ class InvoiceController extends Controller
             }
 
             $updateData = [
+                'customer_id' => $validated['customer_id'] ?? $invoice->customer_id, // Update 6
                 'invoice_no' => $validated['invoice_no'] ?? $invoice->invoice_no,
                 'invoice_date' => $validated['invoice_date'] ?? $invoice->invoice_date,
                 'discount_type' => $validated['discount_type'] ?? $invoice->discount_type,
@@ -219,7 +218,6 @@ class InvoiceController extends Controller
 
             $invoice->update($updateData);
 
-            // If status changed to finalized, create stock movements
             $newStatus = $validated['status'] ?? $invoice->status;
             if ($oldStatus !== 'finalized' && $newStatus === 'finalized'){
                 $this->createStockMovement($invoice->fresh());
@@ -230,7 +228,7 @@ class InvoiceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Invoice updated successfully',
-                'data' => $invoice->load(['items.product.category']),
+                'data' => $invoice->load(['items.product.category', 'customer']),
             ]);
 
         }catch (ValidationException $e){
@@ -249,8 +247,6 @@ class InvoiceController extends Controller
             ],500);
         }
     }
-
-    //Delete invoice
 
     public function destroy(int $id)
     {
@@ -288,19 +284,13 @@ class InvoiceController extends Controller
         }
     }
 
-
     private function createStockMovement(Invoice $invoice)
     {
         foreach ($invoice->items as $item){
-            // Logic to create stock movement for each item
             $product = Product::findOrFail($item->product_id);
-
-            //Check stock availability
             if ($product->stock_qty < $item->quantity){
                 throw new \Exception("Insufficient stock for product : {$product->product_name}. Available stock: {$product->stock_qty}, Required: {$item->quantity}");
             }
-
-            //create stock movement
             StockMovement::create([
                 'product_id' => $item->product_id,
                 'quantity' => $item->quantity,
@@ -308,8 +298,6 @@ class InvoiceController extends Controller
                 'note' => "Stock OUT for Invoice #{$invoice->invoice_no}",
                 'invoice_id' => $invoice->id,
             ]);
-
-            //Update product stock quantity
             $product->stock_qty -= $item->quantity;
             $product->save();
         }
@@ -317,11 +305,8 @@ class InvoiceController extends Controller
 
     private function generateInvoiceNumber()
     {
-        //INV-2026-01-0001
         $year = Carbon::now()->format('Y');
         $month = Carbon::now()->format('m');
-
-        //get the last invoice number
         $lastInvoice = Invoice::where('invoice_no','like', "INV-{$year}-{$month}%")
             ->orderByDesc('invoice_no')
             ->first();
@@ -331,10 +316,6 @@ class InvoiceController extends Controller
         }else{
             $sequence = 1;
         }
-
         return sprintf('INV-%s-%s-%04d', $year, $month, $sequence);
     }
-
-
-
 }

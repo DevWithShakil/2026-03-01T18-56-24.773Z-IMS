@@ -1,4 +1,3 @@
-<!-- View Invoice Modal -->
 <div class="modal fade" id="invoiceShowModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -88,6 +87,10 @@
             let discountAmount = parseFloat(invoice.discount_amount || 0);
             let grandTotal = parseFloat(invoice.grand_total || 0).toFixed(2);
 
+            // Customer Data Logic (As per Task 4 Requirement)
+            let customerName = invoice.customer && invoice.customer.name ? invoice.customer.name : 'Walk-in Customer';
+            let customerMobile = invoice.customer && invoice.customer.mobile ? invoice.customer.mobile : '-';
+
             let invoiceDiscountHtml = '—';
             if (discountAmount > 0) {
                 let label = '';
@@ -99,6 +102,7 @@
                 invoiceDiscountHtml = '- $ ' + discountAmount.toFixed(2) + '<span class="text-muted small">' + label + '</span>';
             }
 
+            // Injecting HTML including the Customer Name and Mobile exactly like the image
             body.innerHTML = `
             <div id="invoicePrintArea">
                 <div class="d-flex justify-content-between align-items-start mb-4">
@@ -107,7 +111,9 @@
                         <div class="text-muted">Date: ${invoiceDate}</div>
                     </div>
                     <div class="text-end">
-                        ${statusBadge}
+                        <div class="mb-2">${statusBadge}</div>
+                        <div class="fw-bold text-danger fs-5">Cus Name: ${customerName}</div>
+                        <div class="fw-bold text-danger fs-5">Mobile: ${customerMobile}</div>
                     </div>
                 </div>
 
@@ -155,14 +161,7 @@
             let modalEl = document.getElementById('invoiceShowModal');
             let modal = new bootstrap.Modal(modalEl);
             modal.show();
-
         }
-
-        // function printInvoice(){
-        //     let w = window.open('', '_blank');
-        //     w.document.write(document.getElementById('invoicePrintArea').innerHTML);
-        //     w.print();
-        // }
 
         function printInvoice(){
             let printArea = document.getElementById('invoicePrintArea');
