@@ -4,9 +4,7 @@
 
 @section('content')
     <div class="row g-4">
-        <!-- Left: Products -->
         <div class="col-lg-8">
-            <!-- Search -->
             <div class="card mb-3">
                 <div class="card-body py-3">
                     <div class="row g-2">
@@ -16,16 +14,25 @@
                                 <input type="text" class="form-control" placeholder="Search product by name or SKU..." id="searchInput">
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <select class="form-select" id="categoryFilter">
                                 <option value="">All categories</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select border-primary" id="customerSelect">
+                                <option value="">Select Customer *</option>
+                                @foreach($customers as $customer)
+                                    <option value="{{ $customer->id }}" data-name="{{ $customer->name }}">
+                                        {{ $customer->name }} ({{ $customer->mobile }})
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Product Grid -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-grid me-2"></i>Products</span>
@@ -34,13 +41,11 @@
                 <div class="card-body">
                     <div class="row g-3" id="productGrid">
                         <div class="col-12 text-center text-muted py-4">Loading products...</div>
-
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right: Cart -->
         <div class="col-lg-4">
             <div class="card cart-sticky">
                 <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
@@ -48,27 +53,26 @@
                     <span class="badge bg-white text-primary" id="cartBadge">0 items</span>
                 </div>
                 <div class="card-body p-0">
-                    <!-- Cart Items -->
-                    <div class="p-3" style="max-height: 320px; overflow-y: auto;" id="cartItemsContainer">
-                        <div class="text-center text-muted py-4">Cart is empty</div>
 
+                    <div class="bg-light p-2 border-bottom text-center text-primary fw-bold" id="selectedCustomerDisplay" style="display: none; font-size: 1.1rem;">
+                        <i class="bi bi-person-check me-1"></i> <span id="customerNameText"></span>
                     </div>
 
-                    <!-- Totals -->
+                    <div class="p-3" style="max-height: 320px; overflow-y: auto;" id="cartItemsContainer">
+                        <div class="text-center text-muted py-4">Cart is empty</div>
+                    </div>
+
                     <div class="border-top p-3 bg-light" id="totalsSection" style="display: none">
-                        <!-- Subtotal -->
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Subtotal</span>
                             <span id="subtotalDisplay">$ 0.00</span>
                         </div>
 
-                        <!-- Item discounts total -->
                         <div class="d-flex justify-content-between mb-2 text-danger" id="itemDiscountRow" style="display: none">
                             <span>Item Discounts</span>
                             <span id="itemDiscountDisplay">- $ 0.00</span>
                         </div>
 
-                        <!-- Invoice discount -->
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted">Invoice Discount</span>
                             <div class="d-flex align-items-center gap-1">
@@ -87,14 +91,12 @@
 
                         <hr class="my-2">
 
-                        <!-- Grand Total -->
                         <div class="d-flex justify-content-between fs-5 fw-bold">
                             <span>Grand Total</span>
                             <span class="text-success" id="grandTotalDisplay">$ 0.00</span>
                         </div>
                     </div>
 
-                    <!-- Invoice Info & Actions -->
                     <div class="border-top p-3">
                         <div class="row g-2 mb-3">
                             <div class="col-6">
@@ -170,7 +172,7 @@
             }
 
             // ─── Load Categories ────────────────────────────────────────
-           async function loadCategories(){
+            async function loadCategories(){
                 try{
                     let response = await axios.get(categoriesUrl,authHeaders());
                     allCategories = response.data['data'] || [];
@@ -182,7 +184,7 @@
                 }catch (err){
                     showErrorToast(getErrorMessage(err, 'Failed to load categories.'));
                 }
-           }
+            }
 
             loadCategories();
 
@@ -293,7 +295,6 @@
                 if (cart.length === 0) {
                     document.getElementById('invoiceDiscountType').value = '';
                     document.getElementById('invoiceDiscountValue').value = '0';
-                    // document.getElementById('itemDiscountDisplay').innerHTML = '0';
                 }
                 recalcCart();
                 renderCart();
@@ -332,7 +333,6 @@
 
                     if (item.discount_type === 'fixed') {
                         discountAmount = Math.min(item.discount_value * item.quantity, lineBeforeDiscount);
-                        // discountAmount = lineBeforeDiscount - item.discount_value;
                     } else if (item.discount_type === 'percent') {
                         discountAmount = lineBeforeDiscount * (item.discount_value / 100);
                     }
@@ -406,7 +406,6 @@
 
                     html +=
                         '<div class="pos-cart-item">' +
-                        // Product name + remove button
                         '<div class="d-flex justify-content-between align-items-start mb-2">' +
                         '<div class="flex-grow-1 me-2">' +
                         '<div class="fw-semibold">' + escapeHtml(item.product_name) + '</div>' +
@@ -416,7 +415,6 @@
                         '<i class="bi bi-x"></i>' +
                         '</button>' +
                         '</div>' +
-                        // Quantity controls + line total
                         '<div class="d-flex align-items-center gap-2">' +
                         '<div class="input-group input-group-sm" style="width: 100px;">' +
                         '<button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(' + item.product_id + ', -1)">−</button>' +
@@ -425,7 +423,6 @@
                         '</div>' +
                         '<div class="flex-grow-1 text-end fw-semibold">' + formatMoney(item.line_total) + '</div>' +
                         '</div>' +
-                        // Item discount
                         '<div class="d-flex align-items-center gap-2 bg-light rounded p-2 mt-2">' +
                         '<span class="small text-muted">Discount:</span>' +
                         '<select class="form-select form-select-sm" style="width: 80px;" onchange="updateItemDiscount(' + item.product_id + ', this.value, this.parentElement.querySelector(\'input\').value)">' +
@@ -450,10 +447,12 @@
                 document.getElementById('invoiceDateInput').value = todayDate();
                 document.getElementById('invoiceDiscountType').value = '';
                 document.getElementById('invoiceDiscountValue').value = '0';
-
-                // Force hide item discount row when resetting
-                // document.getElementById('itemDiscountRow').style.display = 'none';
                 document.getElementById('itemDiscountDisplay').textContent = '- $ 0.00';
+
+                // Reset Customer Selection
+                document.getElementById('customerSelect').value = '';
+                document.getElementById('selectedCustomerDisplay').style.display = 'none';
+                document.getElementById('customerNameText').textContent = '';
 
                 renderCart();
             }
@@ -468,6 +467,9 @@
                 let invoiceDate = document.getElementById('invoiceDateInput').value;
                 let invoiceNo = document.getElementById('invoiceNoInput').value || null;
 
+                // Get Selected Customer
+                let customerId = document.getElementById('customerSelect').value;
+
                 let items = cart.map(function (item) {
                     return {
                         product_id: item.product_id,
@@ -481,6 +483,7 @@
                 });
 
                 return {
+                    customer_id: customerId || null, // Included customer_id in payload
                     invoice_no: invoiceNo,
                     invoice_date: invoiceDate,
                     items: items,
@@ -497,6 +500,14 @@
             async function submitInvoice(status) {
                 if (cart.length === 0) {
                     showErrorToast('Cart is empty.');
+                    return;
+                }
+
+                // Validation for Customer Selection
+                let customerId = document.getElementById('customerSelect').value;
+                if (!customerId) {
+                    showErrorToast('Please select a customer before finalizing the invoice.');
+                    document.getElementById('customerSelect').focus();
                     return;
                 }
 
@@ -529,11 +540,26 @@
                 }
             }
 
-
-
             // ─── Event Listeners ────────────────────────────────────────
             document.getElementById('searchInput').addEventListener('input', renderProducts);
             document.getElementById('categoryFilter').addEventListener('change', renderProducts);
+
+            // Event Listener for Customer Selection
+            document.getElementById('customerSelect').addEventListener('change', function() {
+                let select = this;
+                let displayDiv = document.getElementById('selectedCustomerDisplay');
+                let nameText = document.getElementById('customerNameText');
+
+                if (select.value) {
+                    let customerName = select.options[select.selectedIndex].getAttribute('data-name');
+                    nameText.textContent = customerName;
+                    displayDiv.style.display = 'block';
+                } else {
+                    displayDiv.style.display = 'none';
+                    nameText.textContent = '';
+                }
+            });
+
             document.getElementById('invoiceDiscountType').addEventListener('change', function () { recalcCart(); renderCart(); });
             document.getElementById('invoiceDiscountValue').addEventListener('input', function () { recalcCart(); renderCart(); });
             document.getElementById('clearCartBtn').addEventListener('click', function () {
@@ -543,7 +569,6 @@
 
             document.getElementById('finalizeBtn').addEventListener('click', function () { submitInvoice('finalized'); });
             document.getElementById('saveDraftBtn').addEventListener('click', function () { submitInvoice('draft'); });
-
 
         </script>
     @endpush
