@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Customer;
 
 class DashboardController extends Controller
 {
@@ -28,7 +29,9 @@ class DashboardController extends Controller
 
     public function pos()
     {
-        return view('admin.pos.index');
+        $customers = Customer::orderBy('name', 'asc')->get();
+
+        return view('admin.pos.index', compact('customers'));
     }
 
     public function invoice()
