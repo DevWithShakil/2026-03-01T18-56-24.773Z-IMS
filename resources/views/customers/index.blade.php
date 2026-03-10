@@ -43,7 +43,7 @@
                                 <td class="text-muted">{{ $customer->email ?? '-' }}</td>
                                 <td class="text-muted">{{ Str::limit($customer->description, 30) ?? '-' }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary" title="Edit">
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCustomerModal{{ $customer->id }}" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </button>
 
@@ -55,6 +55,42 @@
                                         </button>
                                     </form>
                                 </td>
+                                <div class="modal fade" id="editCustomerModal{{ $customer->id }}" tabindex="-1" aria-labelledby="editCustomerModalLabel{{ $customer->id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('customers.update', $customer->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCustomerModalLabel{{ $customer->id }}">Edit Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label">Customer Name *</label>
+                        <input type="text" class="form-control" name="name" value="{{ $customer->name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mobile Number *</label>
+                        <input type="text" class="form-control" name="mobile" value="{{ $customer->mobile }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" name="email" value="{{ $customer->email }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3">{{ $customer->description }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
                             </tr>
                             @empty
                             <tr>
