@@ -1,59 +1,47 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Point of Sale (POS) System - Assignment Complete 🚀
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository contains the completed assignment for the Point of Sale (POS) / Inventory Management System. The project has been upgraded with a complete Customer Management module and integrated seamlessly into the POS and Invoice system.
 
-## About Laravel
+## 👨‍💻 Author
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Md. Shakil Khan**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🎯 Completed Requirements (Features)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Task 1 & 2: Customer Management (CRUD)
 
-## Learning Laravel
+- **Database:** Created a `customers` table with `name`, `email`, `mobile`, and `description` fields.
+- **Functionality:** Fully functional Create, Read, Update, and Delete (CRUD) operations for customers.
+- **API & Frontend:** Integrated smooth frontend interactions using Axios for API calls.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Task 3: POS Interface Enhancements
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Customer Selection:** Added a dynamic "Customer Dropdown" right next to the Category filter on the POS page.
+- **Cart UI Update:** When a customer is selected from the dropdown, their name instantly appears inside the Cart section.
+- **Validation:** Implemented strict validation so that a salesman **cannot** finalize an invoice without selecting a customer first.
 
-## Laravel Sponsors
+### Task 4: Invoice Details & Print View
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Database Integration:** Modified the `invoices` table to include `customer_id` and established a Foreign Key relationship with the `customers` table.
+- **Invoice Modal:** The "View Invoice" modal now proudly displays the selected Customer's Name and Mobile Number (styled beautifully in red as per requirements).
+- **Print View:** The exact same customer details are successfully carried over to the printable invoice window.
+- **Fallback Logic:** Handles deleted or missing customers gracefully (e.g., showing "Walk-in Customer").
 
-### Premium Partners
+## 🛠️ Technologies Used
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Backend:** Laravel, MySQL/PostgreSQL
+- **Frontend:** Blade Templates, Bootstrap 5, Vanilla JavaScript
+- **API Calls:** Axios
 
-## Contributing
+## 🎥 Project Presentation Video
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+[👉 Click here to watch the presentation video](https://drive.google.com/file/d/1PMTW3sPHdVuRIYZctU2DJEdS23KYgtDc/view?usp=sharing)
 
-## Code of Conduct
+## ⚙️ How to Run the Project Locally
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+1. Clone the repository.
+2. Run `composer install` to install PHP dependencies.
+3. Copy `.env.example` to `.env` and configure your database credentials.
+4. Run `php artisan key:generate`.
+5. Run `php artisan migrate:fresh --seed` (to apply all tables including the new relationships).
+6. Start the server using `php artisan serve`.
